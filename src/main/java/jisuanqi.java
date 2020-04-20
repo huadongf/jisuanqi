@@ -43,7 +43,7 @@ public class jisuanqi{
                     while (i + 1 < str.length() && standard.indexOf(str.charAt(i+1))==-1)
                     {
                         i++;
-                        tempStr.append(str.substring(i, i + 1));
+                        tempStr.append(str, i, i + 1);
                     }
                     ans.add(tempStr.toString());
                 }else { // 出现操作符
