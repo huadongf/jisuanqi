@@ -18,7 +18,7 @@ public class jisuanqi{
             basic.put('-', 2);
             basic.put('+', 2);
             basic.put('x', 3);
-            basic.put('/', 3);
+            basic.put('/', 3);//
             basic.put('(', 1);//在运算中  （）的优先级最高，但是此处因程序中需要 故设置为0
             basic.put('#',0);
         }
