@@ -1,133 +1,174 @@
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Stack;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JTextField;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.*;
 public class jisuanqi{
     public static class ButtonHandler implements ActionListener{
         public JTextField tf;
-        private Stack<Character> lstack = null;
-        public static boolean symbol =false;
-        public static boolean comm =true;
-        public static boolean bracket =false;
+        public static boolean sy =false;
+        public static boolean c =true;
+        public static boolean fu=true;
+        public static int k =0;
+        private static final Map<Character, Integer> basic = new HashMap<>();
+        static {
+            basic.put('-', 2);
+            basic.put('+', 2);
+            basic.put('x', 3);
+            basic.put('/', 3);
+            basic.put('(', 1);//在运算中  （）的优先级最高，但是此处因程序中需要 故设置为0
+            basic.put('#',0);
+        }
         ButtonHandler(JTextField tf) {
             this.tf = tf;
         }
-        private boolean isNumber(char num) {
-            return num >= '0' && num <= '9' || num == '.';
-        }
-        private boolean comparePri(char s) {
-            if (lstack.empty()) return true;
-            char top = lstack.peek();
-            if (top == '(') return true;
-            switch (s) {
-                case '(': return true;
-                case 'x':
-                case '/':
-                    return top == '+' || top == '-';
-                case '+':
-                case '-':
-                case '=':
-                case ')':
-                    return false;
-                default:break;
-            }
-            return true;
-        }
-        public double calculate(String numStr) {
-            if (numStr.length() > 1 && !"=".equals(numStr.charAt(numStr.length() - 1) + ""))
-                numStr += "=";
-            Stack<Double> numberStack = new Stack<>();
-            lstack = new Stack<>();
-            StringBuffer temp = new StringBuffer();
-            for (int i = 0; i < numStr.length(); i++) {
-                char ch = numStr.charAt(i);
-                if (isNumber(ch)) temp.append(ch);
-                else {
-                    String tempStr = temp.toString();
-                    if (!tempStr.isEmpty()) {
-                        double num = Double.parseDouble(tempStr);
-                        numberStack.push(num);
-                        temp = new StringBuffer();
+        List<String>ans=new ArrayList<>();
+        public void trans(String str)
+        {
+            String standard = "x/+-()";
+            Stack<Character> ops = new Stack<>();
+            ops.push('#');
+            StringBuilder tempStr;
+            for (int i = 0; i < str.length(); i++)
+            {   // 检查是否是带符号的数字
+                // 1. 带正负号且前一个字符为运算符（i=0时直接带正负号的也是数字）
+                // 2. 当前字符为数字
+                if( ((str.charAt(i) == '-' || str.charAt(i) == '+') && (i == 0 || "x/+-(".indexOf(str.charAt(i-1))!=-1)) || Character.isDigit(str.charAt(i)) )
+                {   // 把操作数加入到后缀式中
+                    // 如果是正号就不用加入，负号或者数字本身都要加入
+                    tempStr = new StringBuilder(str.charAt(i) != '+' ? str.substring(i, i + 1) : "");
+                    while (i + 1 < str.length() && standard.indexOf(str.charAt(i+1))==-1)
+                    {
+                        i++;
+                        tempStr.append(str.substring(i, i + 1));
                     }
-                    while (!comparePri(ch) && !lstack.empty()) {
-                        double b = numberStack.pop();
-                        double a = numberStack.pop();
-                        switch (lstack.pop()) {
-                            case '+':
-                                numberStack.push(a + b);break;
-                            case '-':
-                                numberStack.push(a - b);break;
-                            case 'x':
-                                numberStack.push(a * b);break;
-                            case '/':
-                                numberStack.push(a / b);break;
-                            default:break;
+                    ans.add(tempStr.toString());
+                }else { // 出现操作符
+                    if(str.charAt(i) == '(')
+                        ops.push(str.charAt(i));
+                    else if(str.charAt(i) == ')') {
+                        while (ops.peek() != '(')
+                        {
+                            ans.add(ops.peek().toString());
+                            ops.pop();
                         }
-                    }
-                    if (ch != '=') {
-                        lstack.push(ch);
-                        if (ch == ')') {
-                            lstack.pop();
-                            lstack.pop();
+                        ops.pop();
+                    }else {
+                        while (basic.get(str.charAt(i))<=basic.get(ops.peek()))
+                        {
+                            ans.add(ops.peek().toString());
+                            ops.pop();
                         }
+                        ops.push(str.charAt(i));
                     }
                 }
             }
-            return numberStack.pop();
+            while (ops.size() > 1)
+            {
+                ans.add(ops.peek().toString());
+                ops.pop();
+            }
         }
+        public static BigDecimal Suff(List<String> suffixExp) {
+            Stack<BigDecimal> numStack = new Stack<>();
+            for (String str : suffixExp) {
+                if (str.length() == 1 && isOperation(str.charAt(0))) {// 如果是操作符
+                    BigDecimal num2 = numStack.pop();
+                    BigDecimal num1 = numStack.pop();
+                    numStack.push(calc(num1, num2, str));
+
+                } else {
+                    numStack.push(new BigDecimal(str));
+                }
+            }
+            return numStack.peek();
+        }
+
+        public static BigDecimal calc(BigDecimal num1, BigDecimal num2, String op) {
+            switch (op) {
+                case "+":
+                    return num1.add(num2);
+                case "-":
+                    return num1.subtract(num2);
+                case "x":
+                    return num1.multiply(num2);
+                case "/":
+                    return num1.divide(num2, 15, RoundingMode.HALF_UP);// 除法保留15位小数，四舍五入
+                default:
+                    return num1;
+            }
+        }
+
+        public static boolean isOperation(char ch) {
+            return ch == '+' || ch == '-' || ch == 'x' || ch == '/';
+        }
+
         public void actionPerformed(ActionEvent e) {
             if(e.getActionCommand().charAt(0)>='0'&&e.getActionCommand().charAt(0)<='9')
             {
                 tf.setText(tf.getText()+e.getActionCommand());
-                symbol =true;
+                fu=sy =c=true;
             }
-            else if(e.getActionCommand().equals(")") && bracket) {
+            else if(e.getActionCommand().equals(")") && k-->0)
                 tf.setText(tf.getText()+")");
-                bracket =false;
-            }
-            else if(e.getActionCommand().equals("+") && symbol) {
+            else if(e.getActionCommand().equals("+") && sy) {
                 tf.setText(tf.getText()+"+");
-                symbol =false;
-                comm =true;
+                sy = c =false;
             }
-            else if(e.getActionCommand().equals("-") && symbol) {
+            else if(e.getActionCommand().equals("-") && fu) {
                 tf.setText(tf.getText()+"-");
-                symbol =false;
-                comm =true;
+                sy=fu = c =false;
             }
-            else if(e.getActionCommand().equals("x") && symbol) {
+            else if(e.getActionCommand().equals("x") && sy) {
                 tf.setText(tf.getText()+"x");
-                symbol =false;
-                comm =true;
+                sy = c =false;
             }
-            else if(e.getActionCommand().equals("/") && symbol) {
+            else if(e.getActionCommand().equals("/") && sy) {
                 tf.setText(tf.getText()+"/");
-                symbol =false;
-                comm =true;
+                sy = c =false;
             }
-            else if(e.getActionCommand().equals("(") &&!bracket) {
+            else if(e.getActionCommand().equals("(") ) {
                 tf.setText(tf.getText()+"(");
-                bracket =true;
+                k++;
+                fu=true;
             }
-            else if(e.getActionCommand().equals(".") && comm) {
+            else if(e.getActionCommand().equals(".") && c) {
                 tf.setText(tf.getText()+".");
-                comm =false;
+                c =false;
             }
-            else if(e.getActionCommand().equals("C")) tf.setText("");
+            else if(e.getActionCommand().equals("C")) {
+                tf.setText("");
+                k=0;c=fu=true;sy=false;
+            }
             else if(e.getActionCommand().equals("D")) {
-                String str=tf.getText();
-                str=str.substring(0, str.length()-1);
+                String str=tf.getText(); int m=str.length()-1;
+                char o=str.charAt(m);
+                if(o=='(') k--;
+                else if(o==')') k++;
+                else if(o=='x'||o=='/'||o=='-'||o=='+')
+                    fu=sy = c =true;
+                str=str.substring(0,m);
                 tf.setText(str);
             }
             else if(e.getActionCommand().equals("=")) {
-                String str=tf.getText();
-                str=str+"=";
-                double result=calculate(str);
-                if(result==(int)result||Math.abs(result-(int)result)<1e-8) tf.setText((int)result+"");
-                else tf.setText(result+"");
+                String s=tf.getText();
+                if(s.charAt(0)=='-')s='0'+s;
+                ans.clear();
+                // 计算后缀表达式
+                trans(s);
+                for(String ss:ans)
+                    System.out.println(ss);
+                BigDecimal res = Suff(ans);
+                String ak=res.toString();
+                int d;
+                for(int i = ak.length()-1;true; i--)
+                    if(ak.charAt(i)!='0')
+                    { d=i;break;}
+                if(ak.charAt(d)=='.')d--;
+                tf.setText(ak.substring(0,d+1)+"");
             }
         }
     }
