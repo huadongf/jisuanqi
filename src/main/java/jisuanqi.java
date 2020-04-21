@@ -98,12 +98,9 @@ public class jisuanqi{
                     numStack.push(new BigDecimal(str));
             return numStack.peek();
         }
-
-
         public static boolean isOperation(char ch) {
             return ch == '+' || ch == '-' || ch == 'x' || ch == '/';
         }
-
         public void actionPerformed(ActionEvent e) {
             if(e.getActionCommand().charAt(0)>='0'&&e.getActionCommand().charAt(0)<='9')
             {
