@@ -6,8 +6,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="untitled4" />
+        <module name="jisuanqi2" />
         <module name="jisuanqi1" />
+        <module name="untitled4" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="13" />

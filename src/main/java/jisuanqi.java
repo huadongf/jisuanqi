@@ -72,20 +72,6 @@ public class jisuanqi{
                 ops.pop();
             }
         }
-        public static BigDecimal Suff(List<String> suffixExp) {
-            Stack<BigDecimal> numStack = new Stack<>();
-            for (String str : suffixExp) {
-                if (str.length() == 1 && isOperation(str.charAt(0))) {// 如果是操作符
-                    BigDecimal num2 = numStack.pop();
-                    BigDecimal num1 = numStack.pop();
-                    numStack.push(calc(num1, num2, str));
-
-                } else {
-                    numStack.push(new BigDecimal(str));
-                }
-            }
-            return numStack.peek();
-        }
 
         public static BigDecimal calc(BigDecimal num1, BigDecimal num2, String op) {
             switch (op) {
@@ -101,6 +87,18 @@ public class jisuanqi{
                     return num1;
             }
         }
+        public static BigDecimal Suff(List<String> suffixExp) {
+            Stack<BigDecimal> numStack = new Stack<>();
+            for (String str : suffixExp)
+                if (str.length() == 1 && isOperation(str.charAt(0))) {// 如果是操作符
+                    BigDecimal num2 = numStack.pop();
+                    BigDecimal num1 = numStack.pop();
+                    numStack.push(calc(num1, num2, str));
+                } else
+                    numStack.push(new BigDecimal(str));
+            return numStack.peek();
+        }
+
 
         public static boolean isOperation(char ch) {
             return ch == '+' || ch == '-' || ch == 'x' || ch == '/';
@@ -159,8 +157,6 @@ public class jisuanqi{
                 ans.clear();
                 // 计算后缀表达式
                 trans(s);
-                for(String ss:ans)
-                    System.out.println(ss);
                 BigDecimal res = Suff(ans);
                 String ak=res.toString();
                 int d;
