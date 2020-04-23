@@ -156,12 +156,24 @@ public class jisuanqi{
                 trans(s);
                 BigDecimal res = Suff(ans);
                 String ak=res.toString();
-                int d;
-                for(int i = ak.length()-1;true; i--)
-                    if(ak.charAt(i)!='0')
-                    { d=i;break;}
-                if(ak.charAt(d)=='.')d--;
-                tf.setText(ak.substring(0,d+1)+"");
+                    int d;int m=ak.length()-1;
+                    boolean ok;ok=false;
+                for(int j =m;j>=0; j--)
+                    if(ak.charAt(j)=='.')
+                    {
+                        ok=true;
+                        break;}
+                if(!ok)
+                    tf.setText(ak);
+                else {
+                    for (int i = m; true; i--) {
+                        if (ak.charAt(i) != '0') {
+                            d = i;
+                            break;
+                        }
+                    }
+                    tf.setText(ak.substring(0, d + 1) + "");
+                }
             }
         }
     }
